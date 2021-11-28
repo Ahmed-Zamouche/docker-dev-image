@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+alias ll='ls -la'
+alias la='ls -A'
+alias l='ls -CF'
+
+alias nano="nano -lET4"
+alias ack="ack --noheading"
+

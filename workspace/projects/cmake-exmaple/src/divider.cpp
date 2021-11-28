@@ -1,0 +1,46 @@
+#include "divider.h"
+
+#include <cstdlib>
+#include <cstring>
+#include <iostream>
+
+#include "division/division.h"
+
+using namespace std;
+
+const char *const HEADER = "\nDivider © 2018 Monkey Claps Inc.\n\n";
+const char *const USAGE = R"(
+Usage:
+  divider <numerator> <denominator>\n\nDescription:\n\tComputes 
+  the result of a fractional division,\n\tand reports both the result and 
+  the remainder.
+
+)";
+
+int main(int argc, const char *argv[]) {
+  Fraction f;
+
+  cout << HEADER;
+
+  // ensure the correct number of parameters are used.
+  if (argc < 3) {
+    cout << USAGE;
+    return 1;
+  }
+
+  f.numerator = atoll(argv[1]);
+  f.denominator = atoll(argv[2]);
+
+  Division d = Division(f);
+  try {
+    DivisionResult r = d.divide();
+
+    cout << "Division : " << f.numerator << " / " << f.denominator << " = "
+         << r.division << "\n";
+    cout << "Remainder: " << f.numerator << " % " << f.denominator << " = "
+         << r.remainder << "\n";
+  } catch (DivisionByZero &) {
+    cerr << "Can not divide by zero, Homer. Sober up!\n";
+  }
+  return 0;
+}

@@ -1,0 +1,1 @@
+/home/developer/workspace/.config/SpaceVim.d

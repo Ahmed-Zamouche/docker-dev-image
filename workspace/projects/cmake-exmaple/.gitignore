@@ -1,0 +1,7 @@
+build/*
+.local/*
+
+stdout.log
+stderr.log
+
+.vimrc
