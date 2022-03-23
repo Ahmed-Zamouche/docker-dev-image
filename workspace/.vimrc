@@ -9,6 +9,13 @@ function! WorkspaceHookBefore()
  set path+=/usr/include/x86_64-linux-gnu/**
  set path+=/usr/include/**
 
+ let s:cwd = getcwd()
+ exec 'set path+=' . s:cwd . '/**' 
+ exec 'set wildignore+=' . s:cwd . '/.cache/**'
+
+ let g:spacevim_lint_on_save = 0
+ let g:spacevim_lint_on_the_fly = 0
+ 
 endfunction
 
 function! WorkspaceHookAfter()
@@ -24,20 +31,27 @@ function! WorkspaceHookAfter()
   inoremap <A-k> <Esc>:m .-2<CR>==gi
   vnoremap <A-j> :m '>+1<CR>gv=gv
   vnoremap <A-k> :m '<-2<CR>gv=gv
-  
+ 
   " Alternative tab navigation
   nnoremap th  :tabfirst<CR>
   nnoremap tk  :tabnext<CR>
   nnoremap tj  :tabprev<CR>
   nnoremap tl  :tablast<CR>
   nnoremap tt  :tabedit<Space>
-  nnoremap tn  :tabnext<Space>
   nnoremap tm  :tabm<Space>
   nnoremap td  :tabclose<CR>
 
-  " autocmd BufEnter * if (bufname("#") =~ "term://" && bufname("%") !~ "term://") | b# | endif
-  " autocmd BufEnter * if (bufname("#") =~ "NvimTree" && bufname("%") !~ "NvimTree") | b# | endif
-  " autocmd BufEnter * if (bufname("#") =~ "NERD_tree" && bufname("%") !~ "NERD_tree") | b# | endif
-  " autocmd BufEnter * if (bufname("#") =~ "__Tagbar__" && bufname("%") !~ "__Tagbar__") | b# | endif
+  tnoremap <Esc> <C-\><C-n>
+ 
+  inoremap <A-left> <Esc>:tabprev<CR>
+  inoremap <A-right> <Esc>:tabnext<CR>
+  tnoremap <A-left> <C-\><C-n>:tabprev<CR>
+  tnoremap <A-right> <C-\><C-n>:tabnext<CR>
+
+  autocmd BufWinEnter,WinEnter term://* startinsert
+  autocmd BufLeave term://* stopinsert
+
+  set title
+  set titlestring=%F
 endfunction
 
