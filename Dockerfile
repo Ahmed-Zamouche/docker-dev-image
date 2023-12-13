@@ -1,108 +1,102 @@
-FROM debian:bullseye
+FROM debian:latest
 
 ARG IMG_VER
-ENV IMG_VER=${IMG_VER:-v1.0.0}
+ENV IMG_VER=${IMG_VER:-v1.1.0}
 
 
-RUN apt-get update && apt-get upgrade --quiet --yes
+RUN apt-get update && apt-get upgrade --yes
 RUN apt-get install software-properties-common apt-utils gnupg lsb-release\
     curl wget \
     git \
-    asciidoctor \
     tree  nano \
     build-essential gdb \
-    fontconfig xfonts-utils xclip xterm firefox-esr \
-    plantuml pandoc pandoc-plantuml-filter python3-pip \
     man-db \
     sudo \
-    --quiet --yes
+    --yes
 
-ARG NVIM_VER=0.5.1
+RUN mkdir ~/Temp && cd ~/Temp
+
+ARG NODE_VER=20.10.0
+RUN wget https://nodejs.org/dist/v${NODE_VER}/node-v${NODE_VER}-linux-x64.tar.xz
+RUN tar -xf node-v${NODE_VER}-linux-x64.tar.xz
+RUN mv node-v${NODE_VER}-linux-x64 /opt
+ENV PATH=/opt/node-v${NODE_VER}-linux-x64/bin:${PATH}
+
+
+ARG NVIM_VER=0.9.4
 RUN curl --silent -LO https://github.com/neovim/neovim/releases/download/v${NVIM_VER}/nvim.appimage
 RUN chmod +x nvim.appimage
 RUN ./nvim.appimage --appimage-extract 1>/dev/null
-RUN rm nvim.appimage
 RUN mkdir -p /opt && mv squashfs-root /opt
 RUN ln -s /opt/squashfs-root/AppRun /usr/local/bin/nvim
+RUN npm install -g neovim
+RUN sudo apt install python3 python3-pip python3-pynvim -y
 
-RUN bash -c "$(wget -O - https://apt.llvm.org/llvm.sh --quiet)"
-# Fingerprint: 6084 F3CF 814B 57C1 CF12 EFD5 15CF 4D18 AF4F 7421
-RUN wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key --quiet | apt-key add -
-RUN apt-get update && apt-get install clang-format clang-tidy clang-tools \
-    clang clangd libc++-dev libc++1 libc++abi-dev libc++abi1 libclang-dev \
-    libclang1 liblldb-dev libllvm-ocaml-dev libomp-dev libomp5 lld lldb \
-    llvm-dev llvm-runtime llvm python-clang --quiet --yes
+ARG RIPGREP_VER=13.0.0
+RUN curl -LO https://github.com/BurntSushi/ripgrep/releases/download/${RIPGREP_VER}/ripgrep_${RIPGREP_VER}_amd64.deb
+RUN dpkg -i ripgrep_${RIPGREP_VER}_amd64.deb
 
-ARG CMAKE_VER=3.22.0
-RUN wget https://github.com/Kitware/CMake/releases/download/v${CMAKE_VER}/cmake-${CMAKE_VER}-linux-x86_64.sh --quiet
-RUN chmod +x cmake-${CMAKE_VER}-linux-x86_64.sh
-RUN ./cmake-${CMAKE_VER}-linux-x86_64.sh --prefix=/usr/local --skip-license
-RUN rm cmake-${CMAKE_VER}-linux-x86_64.sh
+ARG FDFIND_VER=8.7.1
+RUN curl -LO https://github.com/sharkdp/fd/releases/download/v${FDFIND_VER}/fd_${FDFIND_VER}_amd64.deb
+RUN dpkg -i fd_${FDFIND_VER}_amd64.deb
 
-ARG CCACHE_VER=4.5.1
-RUN wget https://github.com/ccache/ccache/releases/download/v${CCACHE_VER}/ccache-${CCACHE_VER}.tar.gz --quiet
-RUN tar -xf ccache-${CCACHE_VER}.tar.gz
-RUN cd ccache-${CCACHE_VER} && mkdir build && cd build && \
-    CC=/usr/bin/clang CXX=/usr/bin/clang++ LD=/usr/bin/lld \
-    cmake .. -DZSTD_FROM_INTERNET=ON \
-    -DHIREDIS_FROM_INTERNET=ON \
-    -DCMAKE_INSTALL_PREFIX=/usr/local \
-    -DCMAKE_INSTALL_SYSCONFDIR=/etc \
-    -DCMAKE_BUILD_TYPE=Release && \
-    make  -j$(nproc --all) && make install
-RUN ln -s ccache /usr/local/bin/gcc
-RUN ln -s ccache /usr/local/bin/g++
-RUN ln -s ccache /usr/local/bin/cc
-RUN ln -s ccache /usr/local/bin/c++
-RUN ln -s ccache /usr/local/bin/clang
-RUN ln -s ccache /usr/local/bin/clang++
-RUN rm -r ccache-${CCACHE_VER}.tar.gz ccache-${CCACHE_VER}
+ARG LUA_VER=5.4.6
+RUN apt-get install libreadline-dev --yes
+RUN wget https://www.lua.org/ftp/lua-${LUA_VER}.tar.gz
+RUN tar -zxf lua-${LUA_VER}.tar.gz
+RUN cd lua-${LUA_VER} && make linux-readline && make install
 
-ARG GTEST_VER=1.11.0
-RUN wget https://github.com/google/googletest/archive/refs/tags/release-${GTEST_VER}.tar.gz --quiet
-RUN tar -xf release-${GTEST_VER}.tar.gz
-RUN cd googletest-release-${GTEST_VER} && mkdir build && cd build && pwd && \
-    cmake .. -DGTEST_HAS_PTHREAD=1 \
-    -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-    && make && make install
-RUN rm -r release-${GTEST_VER}.tar.gz googletest-release-${GTEST_VER}
+ARG LUAROCKS_VER=3.9.2
+RUN apt-get install zip --yes
+RUN wget https://luarocks.github.io/luarocks/releases/luarocks-${LUAROCKS_VER}.tar.gz
+RUN tar -zxf luarocks-${LUAROCKS_VER}.tar.gz 
+RUN cd luarocks-${LUAROCKS_VER} && ./configure --with-lua-include=/usr/local/include && make && make install
 
-ARG CPPCHECK_VER=2.6
-RUN wget https://github.com/danmar/cppcheck/archive/${CPPCHECK_VER}.tar.gz --quiet
-RUN tar -xf ${CPPCHECK_VER}.tar.gz
-RUN apt-get install libpcre3 libpcre3-dev -y
-RUN cd cppcheck-${CPPCHECK_VER} && mkdir build && cd build && \
-    CC=/usr/bin/clang CXX=/usr/bin/clang++ LD=/usr/bin/lld \
-    cmake .. -DBUILD_GUI=OFF \
-    -DHAVE_RULES=ON \
-    -DUSE_MATCHCOMPILER=ON \
-    -DCMAKE_INSTALL_PREFIX=/usr/local \
-    -DCMAKE_INSTALL_SYSCONFDIR=/etc \
-    -DCMAKE_BUILD_TYPE=Release && \
-    make  -j$(nproc --all) && make install
+ARG BAT_VER=0.24.0
+RUN wget https://github.com/sharkdp/bat/releases/download/v${BAT_VER}/bat_${BAT_VER}_amd64.deb
+RUN dpkg -i bat_${BAT_VER}_amd64.deb
 
-RUN rm -r ${CPPCHECK_VER}.tar.gz cppcheck-${CPPCHECK_VER}
+ARG DELTA_VER=0.16.5
+RUN wget https://github.com/dandavison/delta/releases/download/${DELTA_VER}/git-delta_${DELTA_VER}_amd64.deb
+RUN dpkg -i git-delta_${DELTA_VER}_amd64.deb
+
+ARG LAZYGIT_VER=0.40.2
+RUN wget https://github.com/jesseduffield/lazygit/releases/download/v${LAZYGIT_VER}/lazygit_${LAZYGIT_VER}_Linux_x86_64.tar.gz
+RUN mkdir /opt/lazygit_${LAZYGIT_VER}_Linux_x86_64
+RUN tar -zxf lazygit_${LAZYGIT_VER}_Linux_x86_64.tar.gz -C /opt/lazygit_${LAZYGIT_VER}_Linux_x86_64
+ENV PATH=/opt/lazygit_${LAZYGIT_VER}_Linux_x86_64:${PATH}
+
+RUN cd ~ && rm -rf ~/Temp
 
 RUN apt-get autoremove -y
 
-RUN echo "source /home/developer/workspace/setup.sh" >> /etc/skel/.bashrc
 RUN useradd -ms /bin/bash developer
 RUN usermod -aG sudo developer
 RUN echo "developer     ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 USER developer
 WORKDIR /home/developer
 
-ARG DISPLAY
-ENV DISPLAY=${DISPLAY:-:0.0}
+RUN git clone  https://github.com/Ahmed-Zamouche/LazyVim.git  ~/.config/nvim
+RUN cd ~/.config/nvim && git checkout personal && git submodule update --init --recursive
 
-RUN curl -sLf https://spacevim.org/install.sh | bash
-RUN python3 -m pip install --user --upgrade pynvim
+RUN git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
+RUN ~/.fzf/install
 
-USER root
+RUN wget https://gist.githubusercontent.com/Ahmed-Zamouche/6235fdf5ac584290ba94926f62acb441/raw/a42385fa087c059c2b2360345bac5245bfd4bda4/.bash_functions
+RUN wget https://gist.githubusercontent.com/Ahmed-Zamouche/e75c71c1856f04b3c458cbe1f722ce61/raw/c53a8f49b8fd581699ad791e2bfdabc0588ee08a/.fzfrc
+RUN wget https://gist.githubusercontent.com/Ahmed-Zamouche/dafe2b33458166c61530ea9569e99aab/raw/221ce4db592524ffc3be7ba4a502e2820eed6254/.bash_aliases
+RUN wget https://gist.githubusercontent.com/Ahmed-Zamouche/df69ebe0e48702d5cbe65104103f5e00/raw/e0600a59808f85697aa2bfa082af1a49ddaa4e72/.git-prompt.sh
+RUN wget https://raw.githubusercontent.com/git/git/master/contrib/completion/git-completion.bash -O ~/.git-completion.bash
 
-#ARG CTAGS_VER=1.11.0
-#RUN wget https://sourceforge.net/projects/ctags/files/ctags/5.8/ctags-5.8.tar.gz
-RUN apt-get install exuberant-ctags -y
+RUN echo "[ -f ~/.git-completion.bash ] && source ~/.git-completion.bash" >> ~/.bashrc
+RUN echo "[ -f ~/.bash_functions ] && source ~/.bash_functions" >> ~/.bashrc
+RUN echo "[ -f ~/.git-prompt.sh ] && source ~/.git-prompt.sh" >> ~/.bashrc
+RUN echo "[ -f ~/.fzfrc ] && source ~/.fzfrc" >> ~/.bashrc
+RUN echo "__az_prompt" >> ~/.bashrc
 
-USER developer
+
+RUN echo "export OPEN_WEATHER_API_KEY=55e003de663adbcb7697cd5e8df0e845" >> ~/.profile
+ENV OPEN_WEATHER_API_KEY=55e003de663adbcb7697cd5e8df0e845
+ENV SHELL=bash
+ENV LANG=C.UTF-8
 

@@ -1,11 +1,11 @@
-IMG_VER:=1.0.0
+IMG_VER:=1.1.0
 IMG_NAME:=ahmedz/debian-base:${IMG_VER}
 
 USER:=developer
 
 CONT_NAME:=devcontainer
 
-WORKSPACE:=$(shell pwd)/workspace
+WORKSPACE:=//c/Users/ahmza/workspace
 
 ifeq ($(NO_CACHE),1)
  _NO_CACHE:=--no-cache
@@ -15,10 +15,12 @@ endif
 
 CMD?=bash
 
+foobar:
+	echo "${WORKSPACE}"
+
 .PHONY:build
 build:
 	docker build ${_NO_CACHE} \
-		--build-arg DISPLAY=${DISPLAY} \
 		-t '${IMG_NAME}' .
 
 .PHONY:run
@@ -27,8 +29,7 @@ run:
 		--name ${CONT_NAME} \
 		--privileged \
 		--detach \
-		-v "${WORKSPACE}:/home/${USER}/workspace" \
-		-v /tmp/.X11-unix:/tmp/.X11-unix \
+		-v ${WORKSPACE}:/home/${USER}/workspace \
 		'${IMG_NAME}' \
 		/bin/bash
 	docker ps --quiet --filter "name=${CONT_NAME}" > container.id
