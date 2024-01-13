@@ -1,5 +1,5 @@
-IMG_VER:=1.1.0
-IMG_NAME:=ahmedz/debian-base:${IMG_VER}
+IMG_VER:=2.0.0
+IMG_NAME:=ahmedz/debian-dev:${IMG_VER}
 
 USER:=developer
 
@@ -56,5 +56,4 @@ remove:
 
 .PHONY:clean
 clean:
-	docker rmi --force `docker images --quiet --filter "dangling=true"`
-
+	docker system prune --all

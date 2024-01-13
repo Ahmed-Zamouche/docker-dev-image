@@ -1,0 +1,22 @@
+--- /home/developer/.bashrc~	2024-01-05 19:40:57.552665103 +0000
++++ /home/developer/.bashrc	2024-01-05 20:04:11.856212205 +0000
+@@ -97,6 +97,8 @@
+ # ~/.bash_aliases, instead of adding them here directly.
+ # See /usr/share/doc/bash-doc/examples in the bash-doc package.
+ 
++[ -f ~/.git-completion.bash ] && source ~/.git-completion.bash
++
+ if [ -f ~/.bash_aliases ]; then
+     . ~/.bash_aliases
+ fi
+@@ -113,3 +115,10 @@
+ fi
+ 
+ [ -f ~/.fzf.bash ] && source ~/.fzf.bash
++[ -f ~/.bash_functions ] && source ~/.bash_functions
++[ -f ~/.git-prompt.sh ] && source ~/.git-prompt.sh
++[ -f /etc/bash_completion.d/bazel-complete-list.bash ] && source /etc/bash_completion.d/bazel-complete-list.bash
++[ -f /etc/bash_completion.d/bazel-complete-header.bash ] && source /etc/bash_completion.d/bazel-complete-header.bash
++[ -f /etc/bash_completion.d/bazel-complete-template.bash ] && source /etc/bash_completion.d/bazel-complete-template.bash
++[ -f ~/.fzfrc ] && source ~/.fzfrc
++__az_prompt

@@ -30,7 +30,7 @@ RUN ./nvim.appimage --appimage-extract 1>/dev/null
 RUN mkdir -p /opt && mv squashfs-root /opt
 RUN ln -s /opt/squashfs-root/AppRun /usr/local/bin/nvim
 RUN npm install -g neovim
-RUN sudo apt install python3 python3-pip python3-pynvim -y
+RUN sudo apt install python3 python3-pip python3-pynvim python3-venv -y
 
 ARG RIPGREP_VER=13.0.0
 RUN curl -LO https://github.com/BurntSushi/ripgrep/releases/download/${RIPGREP_VER}/ripgrep_${RIPGREP_VER}_amd64.deb
@@ -66,6 +66,17 @@ RUN mkdir /opt/lazygit_${LAZYGIT_VER}_Linux_x86_64
 RUN tar -zxf lazygit_${LAZYGIT_VER}_Linux_x86_64.tar.gz -C /opt/lazygit_${LAZYGIT_VER}_Linux_x86_64
 ENV PATH=/opt/lazygit_${LAZYGIT_VER}_Linux_x86_64:${PATH}
 
+ARG BAZELISK_VER=1.19.0
+RUN wget https://github.com/bazelbuild/bazelisk/releases/download/v${BAZELISK_VER}/bazelisk-linux-amd64 -O /usr/local/bin/bazel
+RUN chmod +x /usr/local/bin/bazel
+RUN 
+
+ARG BAZEL_VER=7.0.0
+RUN wget https://raw.githubusercontent.com/bazelbuild/bazel/${BAZEL_VER}/scripts/bazel-complete-template.bash -O /etc/bash_completion.d/bazel-complete-template.bash
+RUN wget https://raw.githubusercontent.com/bazelbuild/bazel/${BAZEL_VER}/scripts/bazel-complete-header.bash -O /etc/bash_completion.d/bazel-complete-header.bash
+RUN wget https://raw.githubusercontent.com/bazelbuild/bazel/${BAZEL_VER}/scripts/generate_bash_completion.sh -O /usr/local/bin/generate_bash_completion.sh
+RUN chmod +x /usr/local/bin/generate_bash_completion.sh
+
 RUN cd ~ && rm -rf ~/Temp
 
 RUN apt-get autoremove -y
@@ -78,9 +89,13 @@ WORKDIR /home/developer
 
 RUN git clone  https://github.com/Ahmed-Zamouche/LazyVim.git  ~/.config/nvim
 RUN cd ~/.config/nvim && git checkout personal && git submodule update --init --recursive
+RUN nvim +PluginUpdate +qall
 
 RUN git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
 RUN ~/.fzf/install
+
+RUN wget -P ~ https://git.io/.gdbinit
+RUN sudo apt install python3-pygments
 
 RUN wget https://gist.githubusercontent.com/Ahmed-Zamouche/6235fdf5ac584290ba94926f62acb441/raw/a42385fa087c059c2b2360345bac5245bfd4bda4/.bash_functions
 RUN wget https://gist.githubusercontent.com/Ahmed-Zamouche/e75c71c1856f04b3c458cbe1f722ce61/raw/c53a8f49b8fd581699ad791e2bfdabc0588ee08a/.fzfrc
@@ -88,15 +103,12 @@ RUN wget https://gist.githubusercontent.com/Ahmed-Zamouche/dafe2b33458166c61530e
 RUN wget https://gist.githubusercontent.com/Ahmed-Zamouche/df69ebe0e48702d5cbe65104103f5e00/raw/e0600a59808f85697aa2bfa082af1a49ddaa4e72/.git-prompt.sh
 RUN wget https://raw.githubusercontent.com/git/git/master/contrib/completion/git-completion.bash -O ~/.git-completion.bash
 
-RUN echo "[ -f ~/.git-completion.bash ] && source ~/.git-completion.bash" >> ~/.bashrc
-RUN echo "[ -f ~/.bash_functions ] && source ~/.bash_functions" >> ~/.bashrc
-RUN echo "[ -f ~/.git-prompt.sh ] && source ~/.git-prompt.sh" >> ~/.bashrc
-RUN echo "[ -f ~/.fzfrc ] && source ~/.fzfrc" >> ~/.bashrc
-RUN echo "__az_prompt" >> ~/.bashrc
+COPY bashrc.patch /tmp/bashrc.patch
+RUN patch -u -b ~/.bashrc -i /tmp/bashrc.patch
+RUN sudo rm /tmp/bashrc.patch
 
-
-RUN echo "export OPEN_WEATHER_API_KEY=55e003de663adbcb7697cd5e8df0e845" >> ~/.profile
-ENV OPEN_WEATHER_API_KEY=55e003de663adbcb7697cd5e8df0e845
+RUN echo "export OPEN_WEATHER_API_KEY=${OPEN_WEATHER_API_KEY}" >> ~/.profile
+ENV OPEN_WEATHER_API_KEY=${OPEN_WEATHER_API_KEY}
 ENV SHELL=bash
 ENV LANG=C.UTF-8
 
