@@ -45,12 +45,14 @@ RUN apt-get install libreadline-dev --yes
 RUN wget https://www.lua.org/ftp/lua-${LUA_VER}.tar.gz
 RUN tar -zxf lua-${LUA_VER}.tar.gz
 RUN cd lua-${LUA_VER} && make linux-readline && make install
+RUN cd ..
 
 ARG LUAROCKS_VER=3.9.2
 RUN apt-get install zip --yes
 RUN wget https://luarocks.github.io/luarocks/releases/luarocks-${LUAROCKS_VER}.tar.gz
 RUN tar -zxf luarocks-${LUAROCKS_VER}.tar.gz 
 RUN cd luarocks-${LUAROCKS_VER} && ./configure --with-lua-include=/usr/local/include && make && make install
+RUN cd ..
 
 ARG BAT_VER=0.24.0
 RUN wget https://github.com/sharkdp/bat/releases/download/v${BAT_VER}/bat_${BAT_VER}_amd64.deb
@@ -69,7 +71,6 @@ ENV PATH=/opt/lazygit_${LAZYGIT_VER}_Linux_x86_64:${PATH}
 ARG BAZELISK_VER=1.19.0
 RUN wget https://github.com/bazelbuild/bazelisk/releases/download/v${BAZELISK_VER}/bazelisk-linux-amd64 -O /usr/local/bin/bazel
 RUN chmod +x /usr/local/bin/bazel
-RUN 
 
 ARG BAZEL_VER=7.0.0
 RUN wget https://raw.githubusercontent.com/bazelbuild/bazel/${BAZEL_VER}/scripts/bazel-complete-template.bash -O /etc/bash_completion.d/bazel-complete-template.bash
@@ -92,7 +93,7 @@ RUN cd ~/.config/nvim && git checkout personal && git submodule update --init --
 RUN nvim +PluginUpdate +qall
 
 RUN git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
-RUN ~/.fzf/install
+RUN ~/.fzf/install --all
 
 RUN wget -P ~ https://git.io/.gdbinit
 RUN sudo apt install python3-pygments
