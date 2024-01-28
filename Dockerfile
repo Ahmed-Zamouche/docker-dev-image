@@ -16,27 +16,27 @@ RUN apt-get install software-properties-common apt-utils gnupg lsb-release\
 
 RUN mkdir ~/Temp && cd ~/Temp
 
-ARG NODE_VER=20.10.0
+ARG NODE_VER=20.11.0
 RUN wget https://nodejs.org/dist/v${NODE_VER}/node-v${NODE_VER}-linux-x64.tar.xz
 RUN tar -xf node-v${NODE_VER}-linux-x64.tar.xz
 RUN mv node-v${NODE_VER}-linux-x64 /opt
 ENV PATH=/opt/node-v${NODE_VER}-linux-x64/bin:${PATH}
 
 
-ARG NVIM_VER=0.9.4
+ARG NVIM_VER=0.9.5
 RUN curl --silent -LO https://github.com/neovim/neovim/releases/download/v${NVIM_VER}/nvim.appimage
 RUN chmod +x nvim.appimage
 RUN ./nvim.appimage --appimage-extract 1>/dev/null
-RUN mkdir -p /opt && mv squashfs-root /opt
-RUN ln -s /opt/squashfs-root/AppRun /usr/local/bin/nvim
+RUN mkdir -p /opt && mv squashfs-root /opt/nvim-${NVIM_VER}
+RUN ln -s /opt/nvim-${NVIM_VER}/AppRun /usr/local/bin/nvim
 RUN npm install -g neovim
-RUN sudo apt install python3 python3-pip python3-pynvim python3-venv -y
+RUN sudo apt install python3 python-is-python3 python3-pip python3-pynvim python3-venv -y
 
-ARG RIPGREP_VER=13.0.0
-RUN curl -LO https://github.com/BurntSushi/ripgrep/releases/download/${RIPGREP_VER}/ripgrep_${RIPGREP_VER}_amd64.deb
-RUN dpkg -i ripgrep_${RIPGREP_VER}_amd64.deb
+ARG RIPGREP_VER=14.1.0
+RUN curl -LO https://github.com/BurntSushi/ripgrep/releases/download/${RIPGREP_VER}/ripgrep_${RIPGREP_VER}-1_amd64.deb
+RUN dpkg -i ripgrep_${RIPGREP_VER}-1_amd64.deb
 
-ARG FDFIND_VER=8.7.1
+ARG FDFIND_VER=9.0.0
 RUN curl -LO https://github.com/sharkdp/fd/releases/download/v${FDFIND_VER}/fd_${FDFIND_VER}_amd64.deb
 RUN dpkg -i fd_${FDFIND_VER}_amd64.deb
 
@@ -48,7 +48,6 @@ RUN cd lua-${LUA_VER} && make linux-readline && make install
 RUN cd ..
 
 ARG LUAROCKS_VER=3.9.2
-RUN apt-get install zip --yes
 RUN wget https://luarocks.github.io/luarocks/releases/luarocks-${LUAROCKS_VER}.tar.gz
 RUN tar -zxf luarocks-${LUAROCKS_VER}.tar.gz 
 RUN cd luarocks-${LUAROCKS_VER} && ./configure --with-lua-include=/usr/local/include && make && make install
@@ -72,10 +71,11 @@ ARG BAZELISK_VER=1.19.0
 RUN wget https://github.com/bazelbuild/bazelisk/releases/download/v${BAZELISK_VER}/bazelisk-linux-amd64 -O /usr/local/bin/bazel
 RUN chmod +x /usr/local/bin/bazel
 
-ARG BAZEL_VER=7.0.0
-RUN wget https://raw.githubusercontent.com/bazelbuild/bazel/${BAZEL_VER}/scripts/bazel-complete-template.bash -O /etc/bash_completion.d/bazel-complete-template.bash
-RUN wget https://raw.githubusercontent.com/bazelbuild/bazel/${BAZEL_VER}/scripts/bazel-complete-header.bash -O /etc/bash_completion.d/bazel-complete-header.bash
-RUN wget https://raw.githubusercontent.com/bazelbuild/bazel/${BAZEL_VER}/scripts/generate_bash_completion.sh -O /usr/local/bin/generate_bash_completion.sh
+RUN mkdir /etc/bash_completion.d
+ARG BAZEL_VER=7.0.2
+RUN wget https://raw.githubusercontent.com/bazelbuild/bazel/release-${BAZEL_VER}/scripts/bazel-complete-template.bash -O /etc/bash_completion.d/bazel-complete-template.bash
+RUN wget https://raw.githubusercontent.com/bazelbuild/bazel/release-${BAZEL_VER}/scripts/bazel-complete-header.bash -O /etc/bash_completion.d/bazel-complete-header.bash
+RUN wget https://raw.githubusercontent.com/bazelbuild/bazel/release-${BAZEL_VER}/scripts/generate_bash_completion.sh -O /usr/local/bin/generate_bash_completion.sh
 RUN chmod +x /usr/local/bin/generate_bash_completion.sh
 
 RUN cd ~ && rm -rf ~/Temp
@@ -89,7 +89,7 @@ USER developer
 WORKDIR /home/developer
 
 RUN git clone  https://github.com/Ahmed-Zamouche/LazyVim.git  ~/.config/nvim
-RUN cd ~/.config/nvim && git checkout personal && git submodule update --init --recursive
+RUN cd ~/.config/nvim && git checkout personal && git submodule update --init --recursive && cd
 RUN nvim +PluginUpdate +qall
 
 RUN git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
