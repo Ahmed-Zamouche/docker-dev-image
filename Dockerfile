@@ -10,6 +10,7 @@ RUN apt-get install software-properties-common apt-utils gnupg lsb-release\
     git \
     tree  nano \
     build-essential gdb \
+    zip unzip \
     man-db \
     sudo \
     --yes
@@ -71,7 +72,6 @@ ARG BAZELISK_VER=1.20.0
 RUN wget https://github.com/bazelbuild/bazelisk/releases/download/v${BAZELISK_VER}/bazelisk-linux-amd64 -O /usr/local/bin/bazel
 RUN chmod +x /usr/local/bin/bazel
 
-RUN mkdir /etc/bash_completion.d
 ARG BAZEL_VER=7.1.2
 RUN wget https://raw.githubusercontent.com/bazelbuild/bazel/release-${BAZEL_VER}/scripts/bazel-complete-template.bash -O /etc/bash_completion.d/bazel-complete-template.bash
 RUN wget https://raw.githubusercontent.com/bazelbuild/bazel/release-${BAZEL_VER}/scripts/bazel-complete-header.bash -O /etc/bash_completion.d/bazel-complete-header.bash
