@@ -16,7 +16,7 @@ RUN apt-get install software-properties-common apt-utils gnupg lsb-release\
 
 RUN mkdir ~/Temp && cd ~/Temp
 
-ARG NODE_VER=20.11.0
+ARG NODE_VER=20.13.1
 RUN wget https://nodejs.org/dist/v${NODE_VER}/node-v${NODE_VER}-linux-x64.tar.xz
 RUN tar -xf node-v${NODE_VER}-linux-x64.tar.xz
 RUN mv node-v${NODE_VER}-linux-x64 /opt
@@ -36,7 +36,7 @@ ARG RIPGREP_VER=14.1.0
 RUN curl -LO https://github.com/BurntSushi/ripgrep/releases/download/${RIPGREP_VER}/ripgrep_${RIPGREP_VER}-1_amd64.deb
 RUN dpkg -i ripgrep_${RIPGREP_VER}-1_amd64.deb
 
-ARG FDFIND_VER=9.0.0
+ARG FDFIND_VER=10.1.0
 RUN curl -LO https://github.com/sharkdp/fd/releases/download/v${FDFIND_VER}/fd_${FDFIND_VER}_amd64.deb
 RUN dpkg -i fd_${FDFIND_VER}_amd64.deb
 
@@ -47,7 +47,7 @@ RUN tar -zxf lua-${LUA_VER}.tar.gz
 RUN cd lua-${LUA_VER} && make linux-readline && make install
 RUN cd ..
 
-ARG LUAROCKS_VER=3.9.2
+ARG LUAROCKS_VER=3.11.0
 RUN wget https://luarocks.github.io/luarocks/releases/luarocks-${LUAROCKS_VER}.tar.gz
 RUN tar -zxf luarocks-${LUAROCKS_VER}.tar.gz 
 RUN cd luarocks-${LUAROCKS_VER} && ./configure --with-lua-include=/usr/local/include && make && make install
@@ -57,22 +57,22 @@ ARG BAT_VER=0.24.0
 RUN wget https://github.com/sharkdp/bat/releases/download/v${BAT_VER}/bat_${BAT_VER}_amd64.deb
 RUN dpkg -i bat_${BAT_VER}_amd64.deb
 
-ARG DELTA_VER=0.16.5
+ARG DELTA_VER=0.17.0
 RUN wget https://github.com/dandavison/delta/releases/download/${DELTA_VER}/git-delta_${DELTA_VER}_amd64.deb
 RUN dpkg -i git-delta_${DELTA_VER}_amd64.deb
 
-ARG LAZYGIT_VER=0.40.2
+ARG LAZYGIT_VER=0.41.0
 RUN wget https://github.com/jesseduffield/lazygit/releases/download/v${LAZYGIT_VER}/lazygit_${LAZYGIT_VER}_Linux_x86_64.tar.gz
 RUN mkdir /opt/lazygit_${LAZYGIT_VER}_Linux_x86_64
 RUN tar -zxf lazygit_${LAZYGIT_VER}_Linux_x86_64.tar.gz -C /opt/lazygit_${LAZYGIT_VER}_Linux_x86_64
 ENV PATH=/opt/lazygit_${LAZYGIT_VER}_Linux_x86_64:${PATH}
 
-ARG BAZELISK_VER=1.19.0
+ARG BAZELISK_VER=1.20.0
 RUN wget https://github.com/bazelbuild/bazelisk/releases/download/v${BAZELISK_VER}/bazelisk-linux-amd64 -O /usr/local/bin/bazel
 RUN chmod +x /usr/local/bin/bazel
 
 RUN mkdir /etc/bash_completion.d
-ARG BAZEL_VER=7.0.2
+ARG BAZEL_VER=7.1.2
 RUN wget https://raw.githubusercontent.com/bazelbuild/bazel/release-${BAZEL_VER}/scripts/bazel-complete-template.bash -O /etc/bash_completion.d/bazel-complete-template.bash
 RUN wget https://raw.githubusercontent.com/bazelbuild/bazel/release-${BAZEL_VER}/scripts/bazel-complete-header.bash -O /etc/bash_completion.d/bazel-complete-header.bash
 RUN wget https://raw.githubusercontent.com/bazelbuild/bazel/release-${BAZEL_VER}/scripts/generate_bash_completion.sh -O /usr/local/bin/generate_bash_completion.sh
