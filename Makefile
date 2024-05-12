@@ -15,9 +15,6 @@ endif
 
 CMD?=bash
 
-foobar:
-	echo "${WORKSPACE}"
-
 .PHONY:build
 build:
 	docker build ${_NO_CACHE} \
